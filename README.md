@@ -26,5 +26,12 @@
 | :--- | :--- |
 | [`index.html`](./index.html) | Экран 1: Главная страница (Landing Page) платформы «КАПИТУЛ» |
 | [`app.html`](./app.html) | Экран 2: Интерактивное демо-приложение диагностики бизнеса (6 шагов + отчет) |
+| [`404.html`](./404.html) | Фирменная страница ошибки 404 в институциональной дизайн-системе «КАПИТУЛ» |
+| [`og-cover.png`](./og-cover.png) | Обложка предпросмотра (`1200×630`) для карточек в Telegram, WhatsApp, VK и соцсетях (`Open Graph`) |
+| [`favicon.svg`](./favicon.svg) | Векторная иконка вкладки браузера (`#0D5C46` с белой литерой `К`) |
+| [`apple-touch-icon.png`](./apple-touch-icon.png) | Иконка (`180×180`) для закладок iOS Safari и добавления на главный экран смартфона |
+| [`site.webmanifest`](./site.webmanifest) | Веб-манифест приложения (`Web App Manifest`) для мобильных и десктопных браузеров |
+| [`robots.txt`](./robots.txt) | Правила индексации для поисковых систем и превью-ботов мессенджеров (`TelegramBot` и др.) |
+| [`sitemap.xml`](./sitemap.xml) | Карта маршрутов сайта (`index.html` и `app.html`) |
 | [`01_docs/`](./01_docs/README.md) | Сопроводительный бриф ([`01_task_brief.md`](./01_docs/01_task_brief.md)) и Архитектурный чертеж для Кодера ([`02_architect_blueprint.md`](./01_docs/02_architect_blueprint.md)) |
 | [`README.md`](./README.md) | Настоящее описание и навигатор прототипа №03 |

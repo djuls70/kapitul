@@ -1,0 +1,24 @@
+{
+  "name": "КАПИТУЛ — AI-платформа для поиска программ господдержки бизнеса",
+  "short_name": "КАПИТУЛ",
+  "description": "Информационно-аналитический сервис поиска и подбора программ государственной поддержки бизнеса в 89 регионах РФ.",
+  "lang": "ru-RU",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F4F0",
+  "theme_color": "#F4F4F0",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

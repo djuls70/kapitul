@@ -3,8 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>КАПИТУЛ — Диагностика бизнеса (Демо)</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%230D5C46'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='800' font-size='20'%3EК%3C/text%3E%3C/svg%3E">
+    <title>КАПИТУЛ — Диагностика бизнеса: подбор грантов и субсидий</title>
+    <meta name="description" content="Бесплатная интерактивная диагностика бизнеса из 6 вопросов: автоматический поиск и скоринг доступных грантов, субсидий, льготных займов и налоговых преференций в вашем регионе.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#F4F4F0">
+    <meta name="application-name" content="КАПИТУЛ">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="КАПИТУЛ">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="canonical" href="https://djuls70.github.io/kapitul/app.html">
+
+    <!-- Иконки и манифест приложения -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%230D5C46'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='800' font-size='20'%3EК%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+
+    <!-- Карточка предпросмотра для Telegram, WhatsApp, VK и соцсетей (Open Graph) -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="КАПИТУЛ — Поиск и аналитика программ господдержки">
+    <meta property="og:title" content="КАПИТУЛ — Экспресс-диагностика мер господдержки (6 вопросов)">
+    <meta property="og:description" content="Ответьте на 6 вопросов о вашем бизнесе и получите персональный аналитический отчет по доступным грантам, субсидиям, льготным займам и налоговым преференциям.">
+    <meta property="og:url" content="https://djuls70.github.io/kapitul/app.html">
+    <meta property="og:image" content="https://djuls70.github.io/kapitul/og-cover.png">
+    <meta property="og:image:secure_url" content="https://djuls70.github.io/kapitul/og-cover.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="КАПИТУЛ — Диагностика программ господдержки бизнеса">
+
+    <!-- Twitter / Telegram Large Summary Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="КАПИТУЛ — Экспресс-диагностика мер господдержки (6 вопросов)">
+    <meta name="twitter:description" content="Ответьте на 6 вопросов о вашем бизнесе и получите персональный список доступных грантов, субсидий и льготных займов.">
+    <meta name="twitter:image" content="https://djuls70.github.io/kapitul/og-cover.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -790,7 +825,10 @@
         ];
 
         // Состояние ответов пользователя
+        const STORAGE_KEY = 'kapitul_demo_state_v1';
         let currentStepIndex = 0;
+        let currentScreen = 'quiz';
+        let isHandlingPopState = false;
         let analysisTimeouts = [];
         let userAnswers = {
             region: "",
@@ -801,8 +839,35 @@
             debts: null
         };
 
-        function renderCurrentStep() {
+        function saveAppState() {
+            try {
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    currentStepIndex,
+                    currentScreen,
+                    userAnswers
+                }));
+            } catch (e) {}
+        }
+
+        function syncHistoryHash(hashStr, replace = false) {
+            if (isHandlingPopState) return;
+            try {
+                if (window.location.hash !== hashStr) {
+                    if (replace) {
+                        history.replaceState({ screen: currentScreen, step: currentStepIndex }, '', hashStr);
+                    } else {
+                        history.pushState({ screen: currentScreen, step: currentStepIndex }, '', hashStr);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function renderCurrentStep(replaceHistory = false) {
+            currentScreen = 'quiz';
             const step = stepsData[currentStepIndex];
+            document.title = `КАПИТУЛ — Диагностика (Шаг ${step.id} из 6)`;
+            saveAppState();
+            syncHistoryHash(`#step-${step.id}`, replaceHistory);
             document.getElementById('stepCounter').textContent = `ШАГ ${step.id} ИЗ 6`;
             document.getElementById('stepCategoryName').textContent = step.category;
             document.getElementById('progressBar').style.width = `${(step.id / 6) * 100}%`;
@@ -1048,9 +1113,12 @@
 
         // Анимация анализа профиля
         function startAnalysisAnimation() {
+            currentScreen = 'loading';
+            document.title = 'КАПИТУЛ — Анализируем ваш профиль...';
             analysisTimeouts.forEach(t => clearTimeout(t));
             analysisTimeouts = [];
             document.getElementById('quizSection').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
             const loadingSec = document.getElementById('loadingSection');
             loadingSec.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1081,7 +1149,13 @@
         }
 
         // Выдача экрана результатов
-        function renderResultsScreen() {
+        function renderResultsScreen(replaceHistory = false) {
+            currentScreen = 'results';
+            document.title = `КАПИТУЛ — Найдена 21 мера поддержки (${userAnswers.region || 'Отчет'})`;
+            saveAppState();
+            syncHistoryHash('#results', replaceHistory);
+            document.getElementById('quizSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.add('hidden');
             const resultsSec = document.getElementById('resultsSection');
             resultsSec.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1177,6 +1251,7 @@
             analysisTimeouts.forEach(t => clearTimeout(t));
             analysisTimeouts = [];
             currentStepIndex = 0;
+            currentScreen = 'quiz';
             userAnswers = {
                 region: "",
                 sector: null,
@@ -1185,6 +1260,7 @@
                 statuses: ["Ничего из перечисленного"],
                 debts: null
             };
+            try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
             document.getElementById('resultsSection').classList.add('hidden');
             document.getElementById('loadingSection').classList.add('hidden');
             document.getElementById('quizSection').classList.remove('hidden');
@@ -1213,8 +1289,52 @@
             if (e.key === 'Escape') closeModal();
         });
 
-        // Инициализация первого шага
-        renderCurrentStep();
+        // Поддержка системной кнопки «Назад» браузера и свайпа назад на смартфонах
+        window.addEventListener('popstate', function() {
+            const modal = document.getElementById('demoModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeModal();
+                return;
+            }
+            const hash = window.location.hash;
+            isHandlingPopState = true;
+            if (hash === '#results' && userAnswers.region && userAnswers.sector && userAnswers.stage && userAnswers.goal && userAnswers.debts) {
+                renderResultsScreen(true);
+            } else {
+                const m = hash.match(/^#step-([1-6])$/);
+                if (m) {
+                    currentStepIndex = parseInt(m[1], 10) - 1;
+                } else if (currentScreen === 'results') {
+                    currentStepIndex = 5;
+                } else if (currentStepIndex > 0) {
+                    currentStepIndex--;
+                }
+                document.getElementById('resultsSection').classList.add('hidden');
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('quizSection').classList.remove('hidden');
+                renderCurrentStep(true);
+            }
+            isHandlingPopState = false;
+        });
+
+        // Восстановление состояния при случайной перезагрузке страницы или старт с Шага 1
+        (function initApp() {
+            try {
+                const raw = sessionStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (saved && saved.userAnswers) {
+                        userAnswers = saved.userAnswers;
+                        currentStepIndex = typeof saved.currentStepIndex === 'number' ? saved.currentStepIndex : 0;
+                        if (saved.currentScreen === 'results' && userAnswers.region && userAnswers.sector && userAnswers.stage && userAnswers.goal && userAnswers.debts) {
+                            renderResultsScreen(true);
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {}
+            renderCurrentStep(true);
+        })();
     </script>
 </body>
 </html>
