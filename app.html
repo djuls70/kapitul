@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КАПИТУЛ — Диагностика бизнеса (Демо)</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%230D5C46'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='800' font-size='20'%3EК%3C/text%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Golos Text"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#F4F4F0',
+                            surface: '#FFFFFF',
+                            border: '#E4E4DF',
+                            text: '#141615',
+                            muted: '#5A605D',
+                            subtle: '#8A908D',
+                            accent: '#0D5C46',
+                            accentHover: '#094232',
+                            accentLight: '#EAF3F0',
+                            accentBorder: '#C5DFD6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F4F4F0;
+            color: #141615;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        .card-surface {
+            background-color: #FFFFFF;
+            border: 1px solid #E4E4DF;
+            box-shadow: 0 2px 10px rgba(20, 22, 21, 0.025);
+        }
+        .option-btn {
+            transition: all 0.16s ease;
+        }
+        @media (min-width: 640px) {
+            .option-btn:hover {
+                border-color: #0D5C46;
+                background-color: #F9FBF9;
+                transform: translateY(-1px);
+            }
+        }
+        .option-btn.selected {
+            border-color: #0D5C46;
+            background-color: #EAF3F0;
+        }
+        .blur-lock {
+            filter: blur(4px);
+            user-select: none;
+            pointer-events: none;
+        }
+        .backdrop-blur-xs {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        /* Кастомный скроллбар для выпадающего списка 89 регионов */
+        .regions-scroll {
+            -webkit-overflow-scrolling: touch;
+        }
+        .regions-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .regions-scroll::-webkit-scrollbar-track {
+            background: #F4F4F0;
+            border-radius: 8px;
+        }
+        .regions-scroll::-webkit-scrollbar-thumb {
+            background: #C5DFD6;
+            border-radius: 8px;
+        }
+        .regions-scroll::-webkit-scrollbar-thumb:hover {
+            background: #0D5C46;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-accent selection:text-white">
+
+    <!-- ШАПКА (HEADER) — АДАПТИРОВАНА ПОД УЗКИЕ МОБИЛЬНЫЕ ЭКРАНЫ -->
+    <header class="sticky top-0 z-30 bg-[#F4F4F0]/90 backdrop-blur-md border-b border-brand-border">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
+            <!-- Логотип и дескриптор -->
+            <a href="index.html" class="flex items-center gap-2.5 sm:gap-3.5 group min-w-0">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-brand-accent text-white font-extrabold text-base sm:text-lg flex items-center justify-center shrink-0 shadow-sm group-hover:bg-brand-accentHover transition-colors">
+                    К
+                </div>
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="font-extrabold text-base sm:text-lg tracking-tight text-brand-text">КАПИТУЛ</span>
+                    <span class="hidden md:inline-block h-4 w-[1px] bg-brand-border"></span>
+                    <span class="hidden md:inline-block text-xs text-brand-muted truncate">
+                        AI-платформа для поиска программ господдержки бизнеса
+                    </span>
+                </div>
+            </a>
+
+            <!-- Навигация справа (компактная на мобильном, полная на десктопе) -->
+            <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                <a href="index.html" class="px-2.5 sm:px-3.5 py-2 rounded-lg text-brand-muted hover:text-brand-text hover:bg-white/60 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap">
+                    <span class="sm:hidden">← На сайт</span>
+                    <span class="hidden sm:inline">← На главную</span>
+                </a>
+                <button onclick="openModal()" class="px-3 sm:px-4 py-2 rounded-lg bg-white border border-brand-border hover:border-brand-accent text-brand-text hover:text-brand-accent text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer whitespace-nowrap">
+                    Получить разбор
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ (MAIN) -->
+    <main class="max-w-5xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-10 flex-grow flex flex-col justify-center">
+
+        <!-- ========================================== -->
+        <!-- ЭКРАН 1: ПОШАГОВЫЙ БРИФ (6 ВОПРОСОВ)       -->
+        <!-- ========================================== -->
+        <section id="quizSection" class="max-w-2xl mx-auto w-full">
+            <div class="card-surface rounded-2xl p-5 sm:p-8 md:p-10 sm:min-h-[480px] flex flex-col justify-between">
+                
+                <div>
+                    <!-- Верхняя панель прогресса -->
+                    <div class="mb-5 sm:mb-6">
+                        <div class="flex items-center justify-between text-xs font-mono text-brand-muted mb-2.5">
+                            <span id="stepCounter" class="font-semibold text-brand-accent uppercase">ШАГ 1 ИЗ 6</span>
+                            <span id="stepCategoryName">География бизнеса</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-[#EAEAE4] rounded-full overflow-hidden">
+                            <div id="progressBar" class="h-full bg-brand-accent transition-all duration-300 rounded-full" style="width: 16.66%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Заголовок вопроса -->
+                    <h1 id="questionTitle" class="text-lg sm:text-2xl font-extrabold text-brand-text leading-snug"></h1>
+
+                    <!-- Контекстная подсказка (!) -->
+                    <div class="mt-3 sm:mt-3.5 bg-[#F8F8F4] border border-brand-border rounded-xl p-3 sm:p-3.5 flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-brand-accentLight border border-brand-accentBorder text-brand-accent font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">!</span>
+                        <p id="questionHint" class="text-xs text-brand-muted leading-relaxed"></p>
+                    </div>
+
+                    <!-- Контейнер для вариантов ответа -->
+                    <div id="optionsContainer" class="mt-5 sm:mt-6"></div>
+                </div>
+
+                <!-- Нижняя панель навигации внутри карточки -->
+                <div id="quizFooterNav" class="mt-6 pt-4 border-t border-brand-border flex items-center justify-between gap-3">
+                    <button id="prevBtn" onclick="prevStep()" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-muted hover:text-brand-text transition-colors cursor-pointer invisible py-1">
+                        <span>← Назад</span>
+                    </button>
+
+                    <!-- Правая зона для кнопок "Далее" на Шаге 1 и Шаге 5 -->
+                    <div id="stepActionSlot" class="flex items-center gap-3"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- ЭКРАН 2: АНАЛИЗ ПРОФИЛЯ (ЗАГРУЗКА)         -->
+        <!-- ========================================== -->
+        <section id="loadingSection" class="hidden max-w-xl mx-auto w-full">
+            <div class="card-surface rounded-2xl p-6 sm:p-10 text-center">
+                <div class="w-12 h-12 rounded-2xl bg-brand-accentLight border border-brand-accentBorder text-brand-accent flex items-center justify-center mx-auto mb-5">
+                    <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+
+                <h2 class="text-xl sm:text-2xl font-extrabold text-brand-text">
+                    Анализируем ваш профиль...
+                </h2>
+                <p class="text-xs sm:text-sm text-brand-muted mt-1.5">
+                    Сопоставляем параметры бизнеса с базой федеральных и региональных операторов
+                </p>
+
+                <!-- 4 плашки прогресса -->
+                <div class="mt-6 space-y-2.5 text-left">
+                    <div id="loadStep1" class="p-3.5 rounded-xl bg-[#F8F8F4] border border-brand-border flex items-center gap-3 transition-all">
+                        <span class="status-icon text-sm font-mono text-brand-subtle shrink-0">⏳</span>
+                        <span class="text-xs sm:text-sm font-medium text-brand-text">Анализ профиля завершен</span>
+                    </div>
+                    <div id="loadStep2" class="p-3.5 rounded-xl bg-[#F8F8F4] border border-brand-border flex items-center gap-3 transition-all">
+                        <span class="status-icon text-sm font-mono text-brand-subtle shrink-0">⏳</span>
+                        <span id="loadRegionText" class="text-xs sm:text-sm font-medium text-brand-text">Проверка по реестру региона и федеральной базе...</span>
+                    </div>
+                    <div id="loadStep3" class="p-3.5 rounded-xl bg-[#F8F8F4] border border-brand-border flex items-center gap-3 transition-all">
+                        <span class="status-icon text-sm font-mono text-brand-subtle shrink-0">⏳</span>
+                        <span class="text-xs sm:text-sm font-medium text-brand-text">Ранжируем программы по релевантности...</span>
+                    </div>
+                    <div id="loadStep4" class="p-3.5 rounded-xl bg-[#F8F8F4] border border-brand-border flex items-center gap-3 transition-all">
+                        <span class="status-icon text-sm font-mono text-brand-subtle shrink-0">⏳</span>
+                        <span class="text-xs sm:text-sm font-medium text-brand-text">Подготовка персонального списка возможностей</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- ЭКРАН 3: РЕЗУЛЬТАТЫ ДИАГНОСТИКИ (ОФФЕР)    -->
+        <!-- ========================================== -->
+        <section id="resultsSection" class="hidden max-w-4xl mx-auto w-full space-y-4 sm:space-y-6">
+
+            <!-- БЛОК 1: ЗАГОЛОВОК ОТЧЕТА + ЦИФРОВОЙ ПРОФИЛЬ -->
+            <div class="card-surface rounded-2xl p-5 sm:p-8">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-brand-border">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-brand-accentLight border border-brand-accentBorder mb-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span>
+                            <span class="text-[11px] font-mono font-semibold text-brand-accent uppercase tracking-wider">Диагностика завершена</span>
+                        </div>
+                        <h1 class="text-xl sm:text-3xl font-extrabold text-brand-text leading-tight">
+                            Найдено — <span id="totalProgramsCount" class="text-brand-accent">21</span> мер господдержки для вашего бизнеса
+                        </h1>
+                    </div>
+
+                    <button onclick="resetQuiz()" class="self-start sm:self-auto px-3.5 py-2 rounded-lg bg-[#F8F8F4] hover:bg-brand-accentLight border border-brand-border hover:border-brand-accentBorder text-xs font-semibold text-brand-muted hover:text-brand-accent transition-colors shrink-0 cursor-pointer">
+                        Изменить ответы
+                    </button>
+                </div>
+
+                <!-- Сетка ответов пользователя (заголовки сверху, ответы по центру ячейки) -->
+                <div class="mt-5">
+                    <div class="text-xs font-mono uppercase tracking-wider text-brand-subtle mb-3">
+                        Ваш цифровой профиль:
+                    </div>
+                    <div id="profileSummaryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3"></div>
+                </div>
+
+                <!-- Предупреждение по налогам (показывается, если на 6 шаге выбраны долги) -->
+                <div id="debtWarningBanner" class="hidden mt-4 p-3.5 sm:p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+                    <strong>Обратите внимание:</strong> Вы указали наличие текущих задолженностей перед ФНС или ФССП. Большинство операторов проверяют отсутствие блокировок и долгов на дату подачи заявки. В полном отчете мы покажем порядок закрытия или реструктуризации сальдо ЕНС перед входом в отбор.
+                </div>
+            </div>
+
+            <!-- БЛОК 2: ВАШ ПЕРСОНАЛЬНЫЙ СПИСОК ВОЗМОЖНОСТЕЙ (СЕТКА 2x2) -->
+            <div class="card-surface rounded-2xl p-5 sm:p-8">
+                <h2 class="text-base sm:text-xl font-bold text-brand-text mb-4">
+                    Ваш персональный список возможностей:
+                </h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="p-4 sm:p-5 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col justify-between">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono font-semibold text-brand-accent bg-brand-accentLight border border-brand-accentBorder px-2.5 py-0.5 rounded">Капитал</span>
+                            <span class="font-mono text-lg sm:text-xl font-bold text-brand-text">6 мер</span>
+                        </div>
+                        <div class="font-bold text-sm sm:text-base text-brand-text">Гранты и субсидии</div>
+                        <p class="text-xs text-brand-muted mt-1 leading-relaxed">Безвозмездное финансирование от федеральных и региональных операторов.</p>
+                    </div>
+
+                    <div class="p-4 sm:p-5 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col justify-between">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono font-semibold text-brand-accent bg-brand-accentLight border border-brand-accentBorder px-2.5 py-0.5 rounded">Дешевые деньги</span>
+                            <span class="font-mono text-lg sm:text-xl font-bold text-brand-text">5 мер</span>
+                        </div>
+                        <div class="font-bold text-sm sm:text-base text-brand-text">Льготные займы (1–7%)</div>
+                        <p class="text-xs text-brand-muted mt-1 leading-relaxed">Программы ФРП, региональных фондов и уполномоченных банков на развитие.</p>
+                    </div>
+
+                    <div class="p-4 sm:p-5 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col justify-between">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono font-semibold text-brand-accent bg-brand-accentLight border border-brand-accentBorder px-2.5 py-0.5 rounded">Снижение издержек</span>
+                            <span class="font-mono text-lg sm:text-xl font-bold text-brand-text">6 мер</span>
+                        </div>
+                        <div class="font-bold text-sm sm:text-base text-brand-text">Налоговые льготы</div>
+                        <p class="text-xs text-brand-muted mt-1 leading-relaxed">Снижение налога на прибыль, УСН, имущество и страховых взносов.</p>
+                    </div>
+
+                    <div class="p-4 sm:p-5 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col justify-between">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-mono font-semibold text-brand-accent bg-brand-accentLight border border-brand-accentBorder px-2.5 py-0.5 rounded">Инфраструктура</span>
+                            <span class="font-mono text-lg sm:text-xl font-bold text-brand-text">4 меры</span>
+                        </div>
+                        <div class="font-bold text-sm sm:text-base text-brand-text">Нефинансовые меры</div>
+                        <p class="text-xs text-brand-muted mt-1 leading-relaxed">Государственные поручительства по кредитам, льготная аренда и земля.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- БЛОК 3: ПОДАРОЧНАЯ ОТКРЫТАЯ МЕРА + 3 ЗАБЛОКИРОВАННЫЕ СТРОКИ -->
+            <div class="card-surface rounded-2xl p-5 sm:p-8">
+                <div class="flex flex-wrap items-center gap-2.5 mb-3">
+                    <span class="px-2.5 py-1 rounded-md bg-brand-accent text-white font-mono text-[11px] font-bold uppercase tracking-wider">
+                        ОТКРЫТАЯ КАРТОЧКА (ПРИМЕР ИЗ ОТЧЕТА)
+                    </span>
+                    <span class="text-xs font-semibold text-brand-muted">
+                        Одна из приоритетных мер для вашего профиля
+                    </span>
+                </div>
+
+                <!-- Карточка подарочной меры -->
+                <div class="border border-brand-accentBorder rounded-2xl p-4 sm:p-6 bg-[#FCFDFC]">
+                    <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 sm:gap-4 pb-4 border-b border-brand-border">
+                        <h3 id="giftMeasureTitle" class="text-base sm:text-xl font-extrabold text-brand-text">
+                            Программа грантовой поддержки и субсидирования затрат
+                        </h3>
+                        <span id="giftMeasureAmount" class="font-mono text-lg sm:text-2xl font-extrabold text-brand-accent shrink-0">
+                            до 20 000 000 ₽
+                        </span>
+                    </div>
+
+                    <p id="giftMeasureDesc" class="text-xs sm:text-sm text-brand-muted leading-relaxed mt-3.5"></p>
+
+                    <!-- Эксклюзивный блок АНАЛИТИКА КАПИТУЛ -->
+                    <div class="mt-4 bg-brand-accentLight/70 border border-brand-accentBorder rounded-xl p-4 sm:p-5">
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="text-xs font-mono font-bold text-brand-accent uppercase tracking-wider">
+                                АНАЛИТИКА КАПИТУЛ (СКОРИНГ И ПОДВОДНЫЕ КАМНИ)
+                            </span>
+                        </div>
+
+                        <!-- 4 параметра скоринга -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-4">
+                            <div class="bg-white/90 border border-brand-accentBorder rounded-lg p-2.5">
+                                <div class="text-[10px] font-mono text-brand-muted uppercase">Скорость</div>
+                                <div class="text-xs font-bold text-brand-text mt-0.5">2–3 месяца</div>
+                            </div>
+                            <div class="bg-white/90 border border-brand-accentBorder rounded-lg p-2.5">
+                                <div class="text-[10px] font-mono text-brand-muted uppercase">Сложность</div>
+                                <div class="text-xs font-bold text-brand-text mt-0.5">Средняя</div>
+                            </div>
+                            <div class="bg-white/90 border border-brand-accentBorder rounded-lg p-2.5">
+                                <div class="text-[10px] font-mono text-brand-muted uppercase">Конкуренция</div>
+                                <div class="text-xs font-bold text-brand-text mt-0.5">Умеренная</div>
+                            </div>
+                            <div class="bg-white/90 border border-brand-accentBorder rounded-lg p-2.5">
+                                <div class="text-[10px] font-mono text-brand-muted uppercase">Ценность</div>
+                                <div class="text-xs font-bold text-brand-accent mt-0.5">Высокая (9/10)</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs leading-relaxed">
+                            <div class="bg-white/90 border border-brand-accentBorder rounded-lg p-3">
+                                <div class="font-bold text-brand-text mb-1">Инсайт для победы:</div>
+                                <p id="giftMeasureInsight" class="text-brand-muted"></p>
+                            </div>
+                            <div class="bg-white/90 border border-brand-accentBorder rounded-lg p-3">
+                                <div class="font-bold text-brand-text mb-1">Подводный камень:</div>
+                                <p id="giftMeasureRisk" class="text-brand-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 заблокированные меры под блюром (адаптированы под мобильный) -->
+                <div class="mt-4 space-y-2.5">
+                    <div onclick="openModal()" class="p-3.5 sm:p-4 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 cursor-pointer hover:border-brand-accentBorder transition-colors">
+                        <div class="min-w-0">
+                            <div class="text-xs sm:text-sm font-bold text-brand-text">Субсидирование до 50% затрат на лизинг и закупку оборудования</div>
+                            <div class="text-xs text-brand-muted blur-lock mt-0.5">Региональный оператор поддержки МСП • Лимит до 15 000 000 ₽ • Прием заявок открыт</div>
+                        </div>
+                        <span class="self-start sm:self-auto px-2.5 py-1 rounded-md bg-white border border-brand-border text-[11px] font-mono font-semibold text-brand-muted shrink-0">
+                            🔒 В полном отчете
+                        </span>
+                    </div>
+
+                    <div onclick="openModal()" class="p-3.5 sm:p-4 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 cursor-pointer hover:border-brand-accentBorder transition-colors">
+                        <div class="min-w-0">
+                            <div class="text-xs sm:text-sm font-bold text-brand-text">Целевой льготный заём под 3–5% годовых с госпоручительством</div>
+                            <div class="text-xs text-brand-muted blur-lock mt-0.5">Фонд развития промышленности / Гарантийный фонд • До 50 000 000 ₽ на 5 лет</div>
+                        </div>
+                        <span class="self-start sm:self-auto px-2.5 py-1 rounded-md bg-white border border-brand-border text-[11px] font-mono font-semibold text-brand-muted shrink-0">
+                            🔒 В полном отчете
+                        </span>
+                    </div>
+
+                    <div onclick="openModal()" class="p-3.5 sm:p-4 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 cursor-pointer hover:border-brand-accentBorder transition-colors">
+                        <div class="min-w-0">
+                            <div class="text-xs sm:text-sm font-bold text-brand-text">Снижение налога на прибыль и региональные преференции</div>
+                            <div class="text-xs text-brand-muted blur-lock mt-0.5">Инвестиционный налоговый вычет и льготный режим для приоритетных отраслей</div>
+                        </div>
+                        <span class="self-start sm:self-auto px-2.5 py-1 rounded-md bg-white border border-brand-border text-[11px] font-mono font-semibold text-brand-muted shrink-0">
+                            🔒 В полном отчете
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- БЛОК 4: ЧТО ВЫ ПОЛУЧИТЕ И КНОПКИ ЦЕЛЕВОГО ДЕЙСТВИЯ -->
+            <div class="card-surface rounded-2xl p-5 sm:p-8">
+                <h2 class="text-lg sm:text-2xl font-extrabold text-brand-text">
+                    Получите детализированный отчет и стратегию по всем найденным возможностям
+                </h2>
+
+                <div class="mt-4 bg-[#F8F8F4] border border-brand-border rounded-xl p-4 sm:p-5 space-y-2.5 text-xs sm:text-sm text-brand-text">
+                    <div class="font-bold text-sm sm:text-base mb-2">Что вы получите:</div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-brand-accent font-bold shrink-0">✓</span>
+                        <span><strong>Полные карты всех найденных мер поддержки:</strong> прямые ссылки на операторов, контакты, сроки и требования.</span>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-brand-accent font-bold shrink-0">✓</span>
+                        <span><strong>Эксклюзивный аналитический блок «Капитула»</strong> для каждой программы: наш скоринг, инсайты для победы и предупреждения о подводных камнях.</span>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-brand-accent font-bold shrink-0">✓</span>
+                        <span><strong>Персональный стратегический сценарий:</strong> рекомендации, с каких программ лучше начать, а какие выгоднее комбинировать в связке.</span>
+                    </div>
+                </div>
+
+                <!-- Две финальные однострочные кнопки -->
+                <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <button onclick="openModal()" class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-brand-accent hover:bg-brand-accentHover text-white font-semibold text-sm sm:text-base transition-all shadow-sm cursor-pointer">
+                        <span>Полный отчет</span>
+                        <span>→</span>
+                    </button>
+                    <button onclick="openModal()" class="flex-1 inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-[#F8F8F4] hover:bg-brand-accentLight border border-brand-border hover:border-brand-accentBorder text-brand-text hover:text-brand-accent font-semibold text-sm sm:text-base transition-all cursor-pointer">
+                        Получить консультацию
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ПОДВАЛ (FOOTER) — ЕДИНЫЙ С INDEX.HTML -->
+    <footer class="border-t border-brand-border bg-[#EAEAE4] mt-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-7 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 lg:gap-4">
+            
+            <!-- Левая часть: Иконка + КАПИТУЛ -->
+            <div class="flex items-center gap-2.5 shrink-0">
+                <div class="w-6 h-6 rounded-md bg-brand-accent text-white font-extrabold text-xs flex items-center justify-center shrink-0">
+                    К
+                </div>
+                <div>
+                    <div class="font-bold text-sm text-brand-text leading-none">КАПИТУЛ</div>
+                    <div class="text-[11px] text-brand-muted mt-1 leading-none">Поиск программ господдержки</div>
+                </div>
+            </div>
+
+            <!-- Центральная часть: Контакты -->
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-mono shrink-0">
+                <div>
+                    <span class="text-brand-subtle">TG:</span>
+                    <a href="https://t.me/SerjMuzikin" target="_blank" rel="noopener noreferrer" class="text-brand-text hover:text-brand-accent font-medium ml-1 transition-colors">@SerjMuzikin</a>
+                </div>
+                <div>
+                    <span class="text-brand-subtle">EMAIL:</span>
+                    <a href="mailto:muzikin.s@yandex.ru" class="text-brand-text hover:text-brand-accent font-medium ml-1 transition-colors">muzikin.s@yandex.ru</a>
+                </div>
+            </div>
+
+            <!-- Правая часть: Уведомление об отсутствии сбора ПД -->
+            <div class="text-left lg:text-right text-[11px] text-brand-subtle leading-snug shrink-0">
+                <div class="sm:whitespace-nowrap">Сайт не собирает и не хранит ваши персональные данные.</div>
+                <div class="mt-0.5">© 2026 КАПИТУЛ. Все права защищены.</div>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- МОДАЛЬНОЕ ОКНО (ПОП-АП) — С ВЕРХНЕЙ ПЛАШКОЙ И ЛИНИЕЙ ОТСЕЧКИ -->
+    <div id="demoModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div class="bg-white border border-brand-border rounded-2xl max-w-md w-full overflow-hidden shadow-2xl transform transition-all">
+            
+            <!-- Верхняя шапка поп-апа с плашкой, заголовком и линией отсечки -->
+            <div class="bg-[#F8F8F4] px-5 sm:px-7 py-5 border-b border-brand-border">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-brand-accentLight border border-brand-accentBorder">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span>
+                        <span class="text-[11px] font-mono font-semibold text-brand-accent uppercase tracking-wider">Демо-режим</span>
+                    </div>
+
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-lg bg-white border border-brand-border hover:border-brand-accent text-brand-muted hover:text-brand-text flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Закрыть">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <h3 class="text-xl sm:text-2xl font-bold text-brand-text mt-3.5">
+                    Индивидуальный разбор
+                </h3>
+            </div>
+
+            <!-- Тело поп-апа -->
+            <div class="px-5 sm:px-7 py-6">
+                <p class="text-sm text-brand-muted leading-relaxed">
+                    Вы находитесь на демонстрационном стенде платформы <strong>КАПИТУЛ</strong>. Чтобы обсудить проект, заказать индивидуальный разбор программ господдержки под ваш бизнес или интеграцию подобного ИИ-решения — напишите напрямую руководителю проекта.
+                </p>
+
+                <div class="mt-6 space-y-2.5">
+                    <a href="https://t.me/SerjMuzikin" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-brand-accent hover:bg-brand-accentHover text-white font-semibold text-sm transition-all shadow-xs">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                        </svg>
+                        <span>Написать в Telegram (@SerjMuzikin)</span>
+                    </a>
+
+                    <button onclick="closeModal(); resetQuiz();" class="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl bg-[#F8F8F4] hover:bg-brand-accentLight border border-brand-border hover:border-brand-accentBorder text-brand-text hover:text-brand-accent font-medium text-xs sm:text-sm transition-all cursor-pointer">
+                        <span>Пройти диагностику заново</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Полный список 89 субъектов РФ для Шага 1
+        const regionsList = [
+            "Республика Татарстан",
+            "г. Москва",
+            "Московская область",
+            "г. Санкт-Петербург",
+            "Ленинградская область",
+            "Краснодарский край",
+            "Свердловская область",
+            "Новосибирская область",
+            "Республика Башкортостан",
+            "Нижегородская область",
+            "Самарская область",
+            "Челябинская область",
+            "Ростовская область",
+            "Красноярский край",
+            "Пермский край",
+            "Воронежская область",
+            "Волгоградская область",
+            "Саратовская область",
+            "Тюменская область",
+            "Кемеровская область — Кузбасс",
+            "Алтайский край",
+            "Иркутская область",
+            "Омская область",
+            "Оренбургская область",
+            "Приморский край",
+            "Ставропольский край",
+            "Тульская область",
+            "Удмуртская Республика",
+            "Ульяновская область",
+            "Хабаровский край",
+            "Ярославская область",
+            "Ханты-Мансийский АО — Югра",
+            "Ямало-Ненецкий АО",
+            "Белгородская область",
+            "Брянская область",
+            "Владимирская область",
+            "Вологодская область",
+            "Ивановская область",
+            "Калининградская область",
+            "Калужская область",
+            "Кировская область",
+            "Костромская область",
+            "Курганская область",
+            "Курская область",
+            "Липецкая область",
+            "Мурманская область",
+            "Новгородская область",
+            "Орловская область",
+            "Пензенская область",
+            "Псковская область",
+            "Рязанская область",
+            "Смоленская область",
+            "Тамбовская область",
+            "Тверская область",
+            "Томская область",
+            "Амурская область",
+            "Архангельская область",
+            "Астраханская область",
+            "Забайкальский край",
+            "Камчатский край",
+            "Магаданская область",
+            "Сахалинская область",
+            "Еврейская автономная область",
+            "Ненецкий автономный округ",
+            "Чукотский автономный округ",
+            "Республика Адыгея",
+            "Республика Алтай",
+            "Республика Бурятия",
+            "Республика Дагестан",
+            "Республика Ингушетия",
+            "Кабардино-Балкарская Республика",
+            "Республика Калмыкия",
+            "Карачаево-Черкесская Республика",
+            "Республика Карелия",
+            "Республика Коми",
+            "Республика Крым",
+            "г. Севастополь",
+            "Республика Марий Эл",
+            "Республика Мордовия",
+            "Республика Саха (Якутия)",
+            "Республика Северная Осетия — Алания",
+            "Республика Тыва",
+            "Республика Хакасия",
+            "Чеченская Республика",
+            "Чувашская Республика",
+            "Донецкая Народная Республика",
+            "Луганская Народная Республика",
+            "Запорожская область",
+            "Херсонская область"
+        ];
+
+        // Данные 6 шагов диагностики
+        const stepsData = [
+            {
+                id: 1,
+                category: "География бизнеса",
+                type: "region",
+                question: "В каком регионе зарегистрирован ваш бизнес?",
+                hint: "Это ключевой фильтр. Большинство грантов и субсидий привязаны к конкретному субъекту РФ. Указав его, мы сразу отсечем 90% неподходящих вариантов."
+            },
+            {
+                id: 2,
+                category: "Сфера деятельности",
+                type: "single",
+                question: "Какая основная сфера деятельности вашей компании?",
+                hint: "У каждого фонда и министерства свои отраслевые приоритеты. Мы сопоставим ваш профиль с целевыми программами.",
+                options: [
+                    {
+                        id: "prod",
+                        icon: "🏭",
+                        title: "Производство товаров",
+                        subtitle: "Промышленность, цеха, выпуск оборудования, переработка, ТНП"
+                    },
+                    {
+                        id: "it",
+                        icon: "💻",
+                        title: "Информационные технологии (IT)",
+                        subtitle: "Разработка ПО, веб-сервисы, искусственный интеллект, ПАК"
+                    },
+                    {
+                        id: "build",
+                        icon: "🏗️",
+                        title: "Строительство и недвижимость",
+                        subtitle: "Подрядные работы, СМР, спецтехника, девелопмент, инжиниринг"
+                    },
+                    {
+                        id: "agro",
+                        icon: "🌾",
+                        title: "Сельское хозяйство (АПК)",
+                        subtitle: "Растениеводство, животноводство, пищевая переработка, КФХ"
+                    },
+                    {
+                        id: "trade",
+                        icon: "📦",
+                        title: "Торговля и логистика",
+                        subtitle: "Оптовая и розничная торговля, склады, транспорт, дистрибуция"
+                    },
+                    {
+                        id: "service",
+                        icon: "briefcase",
+                        iconText: "💼",
+                        title: "Сфера услуг и прочее",
+                        subtitle: "B2B и B2C услуги, медицина, образование, туризм, креативные индустрии"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                category: "Стадия развития",
+                type: "single",
+                question: "На какой стадии развития находится ваш бизнес?",
+                hint: "Институты развития делят программы по зрелости компании: то, что доступно стартапу, закрыто для действующего завода, и наоборот.",
+                options: [
+                    {
+                        id: "startup",
+                        icon: "🚀",
+                        title: "Старт (Запуск проекта)",
+                        subtitle: "Бизнес-идея, открытие юрлица или компания работает менее 6 месяцев"
+                    },
+                    {
+                        id: "micro",
+                        icon: "🌱",
+                        title: "Молодой бизнес",
+                        subtitle: "Компания работает от 6 до 12 месяцев, есть первые продажи и клиенты"
+                    },
+                    {
+                        id: "active",
+                        icon: "📈",
+                        title: "Действующий бизнес",
+                        subtitle: "Стабильная выручка, работаем более 1 года, расширяем штат и сбыт"
+                    },
+                    {
+                        id: "scale",
+                        icon: "🏛️",
+                        title: "Масштабирование (Зрелый бизнес)",
+                        subtitle: "Устойчивые обороты, собственные производственные базы, новые рынки"
+                    }
+                ]
+            },
+            {
+                id: 4,
+                category: "Главная цель",
+                type: "single",
+                question: "Какая главная цель привлечения государственной поддержки?",
+                hint: "Государственные средства всегда целевые. Выберите приоритетную задачу, под которую нужны ресурсы прямо сейчас.",
+                options: [
+                    {
+                        id: "equip",
+                        icon: "⚙️",
+                        title: "Покупка оборудования и техники",
+                        subtitle: "Закупка станков, производственных линий, спецтехники или лизинг"
+                    },
+                    {
+                        id: "rnd",
+                        icon: "🔬",
+                        title: "Запуск нового продукта / НИОКР",
+                        subtitle: "Разработка технологии, ПО, опытного образца, оплата труда инженеров"
+                    },
+                    {
+                        id: "infra",
+                        icon: "🏢",
+                        title: "Строительство и инфраструктура",
+                        subtitle: "Постройка цеха или базы, льготная аренда, получение земли без торгов"
+                    },
+                    {
+                        id: "turnover",
+                        icon: "🔄",
+                        title: "Пополнение оборотных средств",
+                        subtitle: "Закупка сырья, материалов, комплектующих, расшивка кассовых разрывов"
+                    }
+                ]
+            },
+            {
+                id: 5,
+                category: "Особые статусы",
+                type: "multi",
+                question: "Есть ли у вашего бизнеса дополнительные особенности?",
+                hint: "Можно выбрать несколько вариантов. Наличие специальных статусов открывает доступ к закрытым конкурсам и повышенным лимитам.",
+                options: [
+                    {
+                        id: "export",
+                        icon: "🌍",
+                        title: "Экспорт",
+                        subtitle: "Действующий экспортер или планируем поставки продукции за рубеж"
+                    },
+                    {
+                        id: "svo",
+                        icon: "🛡️",
+                        title: "Участник СВО",
+                        subtitle: "Собственник или соучредитель бизнеса имеет статус участника СВО"
+                    },
+                    {
+                        id: "woman",
+                        icon: "👩",
+                        title: "Женщина",
+                        subtitle: "Бизнес принадлежит или управляется женщиной-предпринимателем"
+                    },
+                    {
+                        id: "resident",
+                        icon: "📍",
+                        title: "Резидент ТОСЭР / ОЭЗ / Промпарка",
+                        subtitle: "Иннополис, Сколково, технопарк, ОЭЗ или индустриальный парк"
+                    },
+                    {
+                        id: "none",
+                        icon: "📋",
+                        title: "Ничего из перечисленного",
+                        subtitle: "У меня обычный бизнес без специальных статусов"
+                    }
+                ]
+            },
+            {
+                id: 6,
+                category: "Налоговый фильтр",
+                type: "single",
+                question: "Есть ли у компании просроченные задолженности (долги перед налоговой или долги перед приставами)?",
+                hint: "Этот параметр не блокирует диагностику, но позволяет нам заранее учесть требования фондов к чистоте баланса при подготовке отчета.",
+                options: [
+                    {
+                        id: "clean",
+                        icon: "✅",
+                        title: "Нет, все в порядке",
+                        subtitle: "Отсутствуют просроченные долги перед налоговой (ФНС) и приставами (ФССП)"
+                    },
+                    {
+                        id: "debt",
+                        icon: "⚠️",
+                        title: "Да, есть такие долги",
+                        subtitle: "Есть текущая задолженность по налогам, пеням или исполнительным листам"
+                    }
+                ]
+            }
+        ];
+
+        // Состояние ответов пользователя
+        let currentStepIndex = 0;
+        let analysisTimeouts = [];
+        let userAnswers = {
+            region: "",
+            sector: null,
+            stage: null,
+            goal: null,
+            statuses: ["Ничего из перечисленного"],
+            debts: null
+        };
+
+        function renderCurrentStep() {
+            const step = stepsData[currentStepIndex];
+            document.getElementById('stepCounter').textContent = `ШАГ ${step.id} ИЗ 6`;
+            document.getElementById('stepCategoryName').textContent = step.category;
+            document.getElementById('progressBar').style.width = `${(step.id / 6) * 100}%`;
+            document.getElementById('questionTitle').textContent = step.question;
+            document.getElementById('questionHint').textContent = step.hint;
+
+            const prevBtn = document.getElementById('prevBtn');
+            if (currentStepIndex === 0) {
+                prevBtn.classList.add('invisible');
+            } else {
+                prevBtn.classList.remove('invisible');
+            }
+
+            const container = document.getElementById('optionsContainer');
+            const actionSlot = document.getElementById('stepActionSlot');
+            container.innerHTML = '';
+            actionSlot.innerHTML = '';
+
+            // Рендер Шага 1: Выбор региона из 89 субъектов РФ
+            if (step.type === 'region') {
+                container.innerHTML = `
+                    <div class="relative">
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="regionSearchInput"
+                                value="${userAnswers.region}"
+                                placeholder="Начните вводить или выберите регион из списка (89 субъектов РФ)..."
+                                autocomplete="off"
+                                class="w-full px-4 py-3.5 pr-10 rounded-xl bg-[#F8F8F4] border border-brand-border focus:border-brand-accent focus:bg-white text-sm sm:text-base font-medium text-brand-text outline-none transition-all"
+                            />
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-brand-muted">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Список всех 89 регионов -->
+                        <div id="regionDropdownList" class="mt-2 max-h-56 overflow-y-auto overscroll-contain regions-scroll rounded-xl border border-brand-border bg-white divide-y divide-[#F0F0EC]"></div>
+                    </div>
+                `;
+
+                const isRegionValid = regionsList.includes(userAnswers.region);
+                actionSlot.innerHTML = `
+                    <button
+                        id="regionNextBtn"
+                        onclick="nextStepFromRegion()"
+                        ${isRegionValid ? '' : 'disabled'}
+                        class="px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
+                            isRegionValid
+                                ? 'bg-brand-accent hover:bg-brand-accentHover text-white cursor-pointer shadow-xs'
+                                : 'bg-[#EAEAE4] text-brand-subtle cursor-not-allowed'
+                        }"
+                    >
+                        Далее →
+                    </button>
+                `;
+
+                initRegionSelector();
+            }
+
+            // Рендер Шагов 2, 3, 4, 6 (Одиночный выбор)
+            else if (step.type === 'single') {
+                const stateKey = step.id === 2 ? 'sector' : step.id === 3 ? 'stage' : step.id === 4 ? 'goal' : 'debts';
+                const currentVal = userAnswers[stateKey] ? userAnswers[stateKey].title : null;
+
+                const listEl = document.createElement('div');
+                listEl.className = 'grid grid-cols-1 gap-2.5';
+
+                step.options.forEach(opt => {
+                    const emoji = opt.iconText || opt.icon;
+                    const isSelected = currentVal === opt.title;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `option-btn w-full text-left p-3.5 sm:p-4 rounded-xl border border-brand-border bg-[#F8F8F4] flex items-start gap-3.5 cursor-pointer ${isSelected ? 'selected' : ''}`;
+                    btn.innerHTML = `
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-white border border-brand-border flex items-center justify-center text-base sm:text-lg shrink-0 mt-0.5">
+                            ${emoji}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-sm sm:text-base text-brand-text leading-snug">${opt.title}</div>
+                            <div class="text-xs text-brand-muted mt-0.5 leading-relaxed">${opt.subtitle}</div>
+                        </div>
+                    `;
+                    btn.onclick = () => {
+                        userAnswers[stateKey] = opt;
+                        if (currentStepIndex < stepsData.length - 1) {
+                            currentStepIndex++;
+                            renderCurrentStep();
+                        } else {
+                            startAnalysisAnimation();
+                        }
+                    };
+                    listEl.appendChild(btn);
+                });
+
+                container.appendChild(listEl);
+            }
+
+            // Рендер Шага 5 (Множественный выбор с чекбоксами)
+            else if (step.type === 'multi') {
+                const listEl = document.createElement('div');
+                listEl.className = 'grid grid-cols-1 gap-2.5';
+
+                step.options.forEach(opt => {
+                    const isChecked = userAnswers.statuses.includes(opt.title);
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `option-btn w-full text-left p-3.5 sm:p-4 rounded-xl border border-brand-border bg-[#F8F8F4] flex items-start gap-3.5 cursor-pointer ${isChecked ? 'selected' : ''}`;
+                    btn.innerHTML = `
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-white border border-brand-border flex items-center justify-center text-base sm:text-lg shrink-0 mt-0.5">
+                            ${opt.icon}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-sm sm:text-base text-brand-text leading-snug">${opt.title}</div>
+                            <div class="text-xs text-brand-muted mt-0.5 leading-relaxed">${opt.subtitle}</div>
+                        </div>
+                        <div class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-1 transition-colors ${
+                            isChecked ? 'bg-brand-accent border-brand-accent text-white' : 'bg-white border-brand-border'
+                        }">
+                            ${isChecked ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                        </div>
+                    `;
+                    btn.onclick = () => toggleMultiOption(opt.title);
+                    listEl.appendChild(btn);
+                });
+
+                container.appendChild(listEl);
+
+                const hasSelection = userAnswers.statuses.length > 0;
+                actionSlot.innerHTML = `
+                    <span class="hidden sm:inline text-xs font-mono text-brand-muted">Выбрано: ${userAnswers.statuses.length}</span>
+                    <button
+                        onclick="nextStepFromMulti()"
+                        ${hasSelection ? '' : 'disabled'}
+                        class="px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
+                            hasSelection
+                                ? 'bg-brand-accent hover:bg-brand-accentHover text-white cursor-pointer shadow-xs'
+                                : 'bg-[#EAEAE4] text-brand-subtle cursor-not-allowed'
+                        }"
+                    >
+                        Далее →
+                    </button>
+                `;
+            }
+        }
+
+        function initRegionSelector() {
+            const input = document.getElementById('regionSearchInput');
+            const list = document.getElementById('regionDropdownList');
+            const nextBtn = document.getElementById('regionNextBtn');
+
+            function renderRegions(filterText = '') {
+                const query = filterText.trim().toLowerCase();
+                const filtered = regionsList.filter(r => r.toLowerCase().includes(query));
+
+                if (filtered.length === 0) {
+                    list.innerHTML = `<div class="px-4 py-3 text-xs text-brand-muted">Регион не найден. Проверьте написание.</div>`;
+                    return;
+                }
+
+                list.innerHTML = filtered.map(reg => {
+                    const isSelected = userAnswers.region === reg;
+                    return `
+                        <button
+                            type="button"
+                            onclick="selectRegion('${reg.replace(/'/g, "\\'")}')"
+                            class="w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between transition-colors cursor-pointer ${
+                                isSelected
+                                    ? 'bg-brand-accentLight text-brand-accent font-bold'
+                                    : 'hover:bg-[#F8F8F4] text-brand-text font-medium'
+                            }"
+                        >
+                            <span>${reg}</span>
+                            ${isSelected ? '<span class="text-brand-accent font-mono text-xs">✓ Выбрано</span>' : ''}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            input.addEventListener('input', (e) => {
+                const val = e.target.value;
+                renderRegions(val);
+                if (regionsList.includes(val)) {
+                    userAnswers.region = val;
+                    nextBtn.disabled = false;
+                    nextBtn.className = 'px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-brand-accent hover:bg-brand-accentHover text-white cursor-pointer shadow-xs';
+                } else {
+                    userAnswers.region = '';
+                    nextBtn.disabled = true;
+                    nextBtn.className = 'px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-[#EAEAE4] text-brand-subtle cursor-not-allowed';
+                }
+            });
+
+            renderRegions('');
+        }
+
+        function selectRegion(regionName) {
+            userAnswers.region = regionName;
+            currentStepIndex = 1;
+            renderCurrentStep();
+        }
+
+        function nextStepFromRegion() {
+            if (regionsList.includes(userAnswers.region)) {
+                currentStepIndex = 1;
+                renderCurrentStep();
+            }
+        }
+
+        function toggleMultiOption(optionTitle) {
+            const noneTitle = "Ничего из перечисленного";
+            if (optionTitle === noneTitle) {
+                userAnswers.statuses = [noneTitle];
+            } else {
+                userAnswers.statuses = userAnswers.statuses.filter(item => item !== noneTitle);
+                if (userAnswers.statuses.includes(optionTitle)) {
+                    userAnswers.statuses = userAnswers.statuses.filter(item => item !== optionTitle);
+                } else {
+                    userAnswers.statuses.push(optionTitle);
+                }
+                if (userAnswers.statuses.length === 0) {
+                    userAnswers.statuses = [noneTitle];
+                }
+            }
+            renderCurrentStep();
+        }
+
+        function nextStepFromMulti() {
+            if (userAnswers.statuses.length > 0) {
+                currentStepIndex = 5;
+                renderCurrentStep();
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderCurrentStep();
+            }
+        }
+
+        // Анимация анализа профиля
+        function startAnalysisAnimation() {
+            analysisTimeouts.forEach(t => clearTimeout(t));
+            analysisTimeouts = [];
+            document.getElementById('quizSection').classList.add('hidden');
+            const loadingSec = document.getElementById('loadingSection');
+            loadingSec.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            document.getElementById('loadRegionText').textContent = `Проверка по реестру (${userAnswers.region}) и федеральной базе...`;
+
+            const stepIds = ['loadStep1', 'loadStep2', 'loadStep3', 'loadStep4'];
+            stepIds.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('bg-brand-accentLight', 'border-brand-accentBorder');
+                el.querySelector('.status-icon').textContent = '⏳';
+            });
+
+            stepIds.forEach((id, idx) => {
+                const tid = setTimeout(() => {
+                    const el = document.getElementById(id);
+                    el.classList.add('bg-brand-accentLight', 'border-brand-accentBorder');
+                    el.querySelector('.status-icon').textContent = '✅';
+                }, (idx + 1) * 650);
+                analysisTimeouts.push(tid);
+            });
+
+            const finalTid = setTimeout(() => {
+                loadingSec.classList.add('hidden');
+                renderResultsScreen();
+            }, 3100);
+            analysisTimeouts.push(finalTid);
+        }
+
+        // Выдача экрана результатов
+        function renderResultsScreen() {
+            const resultsSec = document.getElementById('resultsSection');
+            resultsSec.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Заполняем 6 ячеек цифрового профиля (заголовки сверху, ответы строго по центру ячейки)
+            const profileGrid = document.getElementById('profileSummaryGrid');
+
+            const statusesHTML = userAnswers.statuses.map(st =>
+                `<span class="inline-block px-2 py-0.5 rounded bg-white border border-brand-border text-xs font-semibold text-brand-text">${st}</span>`
+            ).join(' ');
+
+            const profileItems = [
+                { label: "1. Регион", value: `<span class="font-bold text-sm text-brand-text">${userAnswers.region}</span>` },
+                { label: "2. Сфера бизнеса", value: `<span class="font-bold text-sm text-brand-text">${userAnswers.sector.title}</span>` },
+                { label: "3. Стадия развития", value: `<span class="font-bold text-sm text-brand-text">${userAnswers.stage.title}</span>` },
+                { label: "4. Главная цель", value: `<span class="font-bold text-sm text-brand-text">${userAnswers.goal.title}</span>` },
+                { label: "5. Особые статусы", value: `<div class="flex flex-wrap gap-1.5">${statusesHTML}</div>` },
+                { label: "6. Налоговый фильтр", value: `<span class="font-bold text-sm text-brand-text">${userAnswers.debts.title}</span>` }
+            ];
+
+            profileGrid.innerHTML = profileItems.map(item => `
+                <div class="p-3.5 rounded-xl bg-[#F8F8F4] border border-brand-border flex flex-col min-h-[84px]">
+                    <div class="text-[11px] font-mono text-brand-subtle uppercase">${item.label}</div>
+                    <div class="flex-grow flex items-center mt-1.5">
+                        ${item.value}
+                    </div>
+                </div>
+            `).join('');
+
+            // Баннер по долгам
+            const debtBanner = document.getElementById('debtWarningBanner');
+            if (userAnswers.debts && userAnswers.debts.id === 'debt') {
+                debtBanner.classList.remove('hidden');
+            } else {
+                debtBanner.classList.add('hidden');
+            }
+
+            // Адаптация подарочной меры под выбранную отрасль
+            const giftMap = {
+                prod: {
+                    title: "Целевая субсидия и льготный заём на модернизацию производства",
+                    amount: "до 30 000 000 ₽",
+                    desc: `Программа для производственных компаний (${userAnswers.region}): возмещение части затрат на приобретение нового промышленного оборудования и станков либо целевое финансирование под 1–5% годовых.`,
+                    insight: "Заявки с приложенными коммерческими предложениями от отечественных производителей оборудования и расчетом прироста рабочих мест получают максимальный балл комиссии.",
+                    risk: "Жесткое требование по сохранению штатной численности и выполнению планового показателя выручки в течение 3 лет после получения средств."
+                },
+                it: {
+                    title: "Грант на разработку и внедрение отечественных IT-решений",
+                    amount: "до 20 000 000 ₽",
+                    desc: `Целевое безвозмездное финансирование для технологических проектов (${userAnswers.region}) на оплату труда разработчиков, создание прототипа, тестирование и регистрацию РИД.`,
+                    insight: "Ключевой вес на экспертизе имеет подтвержденная научно-техническая новизна архитектуры и наличие писем о заинтересованности от будущих заказчиков.",
+                    risk: "Нецелевым расходом признается оплата подрядчиков без согласованного ТЗ; все права на созданный код должны быть поставлены на баланс компании."
+                },
+                build: {
+                    title: "Льготный лизинг спецтехники и субсидирование первого взноса",
+                    amount: "до 25 000 000 ₽",
+                    desc: `Программа поддержки строительных и инфраструктурных компаний (${userAnswers.region}): компенсация авансового платежа по договорам лизинга строительной и дорожной техники.`,
+                    insight: "Наибольший шанс одобрения у компаний, подающих пакет документов сразу после заключения лизингового договора в рамках текущего финансового года.",
+                    risk: "Запрет на переуступку прав лизинга или субаренду техники без письменного согласия оператора до окончания срока контроля."
+                },
+                agro: {
+                    title: "Агропромышленный грант и субсидия на закупку сельхозтехники",
+                    amount: "до 30 000 000 ₽",
+                    desc: `Государственная программа поддержки сельхозпроизводителей и переработчиков (${userAnswers.region}): возмещение до 50% затрат на технику, оборудование и племенной фонд.`,
+                    insight: "Приоритет получают проекты глубокой переработки сельхозпродукции с собственной кормовой или сырьевой базой в регионе присутствия.",
+                    risk: "Обязательство по ежегодной отчетности о приросте объема реализованной сельхозпродукции не менее чем на 10% в год."
+                },
+                trade: {
+                    title: "Льготное оборотное и инвестиционное финансирование с поручительством",
+                    amount: "до 15 000 000 ₽",
+                    desc: `Программа регионального фонда поддержки предпринимательства (${userAnswers.region}): финансирование по льготной ставке ниже ключевой ставки ЦБ с покрытием до 70% залога Гарантийным фондом.`,
+                    insight: "Сделка проходит в 2 раза быстрее при подаче единой заявки одновременно в уполномоченный банк и региональную Гарантийную организацию.",
+                    risk: "Важно строго разделить целевой транш на пополнение запасов и текущие операционные платежи (аренду, погашение старых кредитов)."
+                },
+                service: {
+                    title: "Целевой грант и микрофинансирование на развитие сервисного бизнеса",
+                    amount: "до 5 000 000 ₽",
+                    desc: `Программа развития малого и среднего предпринимательства (${userAnswers.region}): средства на оснащение рабочих мест, закупку профильного оборудования и программного обеспечения.`,
+                    insight: "Комиссия выше оценивает проекты с прозрачным планом софинансирования (от 20–30% собственных средств на расчетном счете).",
+                    risk: "Кассовый разрыв на этапе казначейского сопровождения: важно заранее согласовать коды ОКВЭД и смету до копейки перед подписанием соглашения."
+                }
+            };
+
+            const selectedGift = giftMap[userAnswers.sector.id] || giftMap.prod;
+            document.getElementById('giftMeasureTitle').textContent = selectedGift.title;
+            document.getElementById('giftMeasureAmount').textContent = selectedGift.amount;
+            document.getElementById('giftMeasureDesc').textContent = selectedGift.desc;
+            document.getElementById('giftMeasureInsight').textContent = selectedGift.insight;
+            document.getElementById('giftMeasureRisk').textContent = selectedGift.risk;
+        }
+
+        function resetQuiz() {
+            analysisTimeouts.forEach(t => clearTimeout(t));
+            analysisTimeouts = [];
+            currentStepIndex = 0;
+            userAnswers = {
+                region: "",
+                sector: null,
+                stage: null,
+                goal: null,
+                statuses: ["Ничего из перечисленного"],
+                debts: null
+            };
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('quizSection').classList.remove('hidden');
+            renderCurrentStep();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Модальное окно
+        function openModal() {
+            const modal = document.getElementById('demoModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('demoModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('demoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Инициализация первого шага
+        renderCurrentStep();
+    </script>
+</body>
+</html>

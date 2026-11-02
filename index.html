@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КАПИТУЛ — AI-платформа для поиска программ господдержки бизнеса</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%230D5C46'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='800' font-size='20'%3EК%3C/text%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Golos Text"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            bg: '#F4F4F0',
+                            surface: '#FFFFFF',
+                            border: '#E4E4DF',
+                            text: '#141615',
+                            muted: '#5A605D',
+                            subtle: '#8A908D',
+                            accent: '#0D5C46',
+                            accentHover: '#094232',
+                            accentLight: '#EAF3F0',
+                            accentBorder: '#C5DFD6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F4F4F0;
+            color: #141615;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Плавная анимация бегущих строк */
+        @keyframes marquee-left {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-right {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0%); }
+        }
+        .animate-marquee-left {
+            display: flex;
+            width: max-content;
+            animation: marquee-left 42s linear infinite;
+        }
+        .animate-marquee-right {
+            display: flex;
+            width: max-content;
+            animation: marquee-right 46s linear infinite;
+        }
+        .marquee-wrapper:hover .animate-marquee-left,
+        .marquee-wrapper:hover .animate-marquee-right {
+            animation-play-state: paused;
+        }
+
+        /* Боковые градиенты для бегущей ленты */
+        .marquee-mask {
+            mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+        }
+
+        /* Карточки */
+        .card-surface {
+            background-color: #FFFFFF;
+            border: 1px solid #E4E4DF;
+            box-shadow: 0 2px 10px rgba(20, 22, 21, 0.025);
+        }
+        .backdrop-blur-xs {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .benefit-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        @media (min-width: 640px) {
+            .benefit-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 24px -8px rgba(13, 92, 70, 0.08);
+                border-color: #C5DFD6;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-accent selection:text-white">
+
+    <!-- ШАПКА (HEADER) -->
+    <header class="sticky top-0 z-30 bg-[#F4F4F0]/90 backdrop-blur-md border-b border-brand-border">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
+            <!-- Логотип и дескриптор -->
+            <a href="index.html" class="flex items-center gap-2.5 sm:gap-3.5 group min-w-0">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-brand-accent text-white font-extrabold text-base sm:text-lg flex items-center justify-center shrink-0 shadow-sm group-hover:bg-brand-accentHover transition-colors">
+                    К
+                </div>
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="font-extrabold text-base sm:text-lg tracking-tight text-brand-text">КАПИТУЛ</span>
+                    <span class="hidden md:inline-block h-4 w-[1px] bg-brand-border"></span>
+                    <span class="hidden md:inline-block text-xs text-brand-muted truncate">
+                        AI-платформа для поиска программ господдержки бизнеса
+                    </span>
+                </div>
+            </a>
+
+            <!-- Кнопка вызова поп-апа -->
+            <button onclick="openModal()" class="px-3 sm:px-4 py-2 rounded-lg bg-white border border-brand-border hover:border-brand-accent text-brand-text hover:text-brand-accent text-xs sm:text-sm font-semibold transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap">
+                Получить разбор
+            </button>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ (MAIN) -->
+    <main class="max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 space-y-4 sm:space-y-6 flex-grow">
+
+        <!-- БЛОК 1: ГЛАВНЫЙ ЗАГОЛОВОК (HERO) -->
+        <section class="card-surface rounded-2xl p-6 sm:p-10 md:p-12 text-center">
+            <h1 class="text-[26px] sm:text-4xl md:text-[44px] font-extrabold tracking-tight text-brand-text leading-[1.15] max-w-3xl mx-auto">
+                Найдите все гранты, субсидии и льготы, доступные вашему бизнесу. <span class="text-brand-accent">По закону.</span>
+            </h1>
+        </section>
+
+        <!-- БЛОК 2: 28 ВИДОВ ГОСПОДДЕРЖКИ -->
+        <section class="card-surface rounded-2xl py-5 sm:py-7 px-4 sm:px-8 overflow-hidden">
+            <!-- Шапка блока с тумблером -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <h2 class="text-base sm:text-lg font-bold text-brand-text">
+                    28 видов господдержки
+                </h2>
+
+                <!-- Тумблер "Показать все списком" -->
+                <label class="inline-flex items-center gap-2.5 cursor-pointer select-none self-start sm:self-auto" onclick="toggleAllTags(event)">
+                    <span class="text-xs sm:text-sm font-medium text-brand-muted">Показать все списком</span>
+                    <button type="button" id="tagsToggleBtn" role="switch" aria-checked="false" class="relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent bg-[#D8D8D2] transition-colors duration-200 ease-in-out focus:outline-none">
+                        <span id="tagsToggleCircle" class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                    </button>
+                </label>
+            </div>
+
+            <!-- Режим 1: Живая лента (2 ряда) -->
+            <div id="marqueeView" class="marquee-wrapper marquee-mask space-y-2.5 -mx-4 sm:-mx-8">
+                <div id="marqueeRow1" class="animate-marquee-left gap-2.5 px-2"></div>
+                <div id="marqueeRow2" class="animate-marquee-right gap-2.5 px-2"></div>
+            </div>
+
+            <!-- Режим 2: Полный список (на мобильном 1 колонка, на планшете 2, на десктопе 4) -->
+            <div id="gridView" class="hidden pt-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"></div>
+        </section>
+
+        <!-- БЛОК 3: МАСШТАБ МОНИТОРИНГА (1 000+ ОПЕРАТОРОВ) -->
+        <section class="card-surface rounded-2xl p-5 sm:p-8">
+            <p class="text-sm sm:text-base md:text-[17px] text-brand-muted leading-relaxed text-center max-w-4xl mx-auto">
+                AI-платформа «Капитул» непрерывно мониторит активность <span class="text-brand-accent font-semibold">более 1 000 государственных операторов</span>, включая ключевые институты развития РФ, профильные министерства и ведомства всех 89 регионов, сеть региональных Фондов развития промышленности и Гарантийных организаций, аккредитованные банки, а также управляющие компании технопарков и ОЭЗ.
+            </p>
+
+            <!-- Три симметричные плашки метрик -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6 pt-6 border-t border-brand-border">
+                <div class="bg-[#F9F9F6] border border-brand-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                    <span class="font-mono text-xl sm:text-2xl font-bold text-brand-accent">1 000+</span>
+                    <span class="text-xs text-brand-muted mt-1">госоператоров в базе</span>
+                </div>
+                <div class="bg-[#F9F9F6] border border-brand-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                    <span class="font-mono text-xl sm:text-2xl font-bold text-brand-accent">89 регионов</span>
+                    <span class="text-xs text-brand-muted mt-1">сплошное покрытие РФ</span>
+                </div>
+                <div class="bg-[#F9F9F6] border border-brand-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                    <span class="font-mono text-xl sm:text-2xl font-bold text-brand-accent">24 / 7</span>
+                    <span class="text-xs text-brand-muted mt-1">непрерывный мониторинг</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- БЛОК 4: 3 КАРТОЧКИ ВЫГОД -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            <!-- Карточка 1 -->
+            <div class="card-surface benefit-card rounded-2xl p-5 sm:p-7 flex flex-col">
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-brand-accentLight border border-brand-accentBorder flex items-center justify-center text-brand-accent shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-brand-accent text-white tracking-wider uppercase">
+                        ACTIVE
+                    </span>
+                </div>
+                <h3 class="text-base sm:text-[17px] font-bold text-brand-text leading-snug mb-2.5">
+                    Исчерпывающий анализ доступных программ.
+                </h3>
+                <p class="text-sm text-brand-muted leading-relaxed">
+                    Наш алгоритм сканирует экосистему 24/7, предоставляя вам доступ к наиболее полной базе данных о мерах поддержки.
+                </p>
+            </div>
+
+            <!-- Карточка 2 -->
+            <div class="card-surface benefit-card rounded-2xl p-5 sm:p-7 flex flex-col">
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-brand-accentLight border border-brand-accentBorder flex items-center justify-center text-brand-accent shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-brand-accent text-white tracking-wider uppercase">
+                        PROCESSING
+                    </span>
+                </div>
+                <h3 class="text-base sm:text-[17px] font-bold text-brand-text leading-snug mb-2.5">
+                    Стратегия подготовки сильной заявки.
+                </h3>
+                <p class="text-sm text-brand-muted leading-relaxed">
+                    Мы предоставляем аналитику, которая позволяет значительно повысить качество вашей заявки и ее соответствие критериям оценки.
+                </p>
+            </div>
+
+            <!-- Карточка 3 -->
+            <div class="card-surface benefit-card rounded-2xl p-5 sm:p-7 flex flex-col">
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-brand-accentLight border border-brand-accentBorder flex items-center justify-center text-brand-accent shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-brand-accent text-white tracking-wider uppercase">
+                        STANDBY
+                    </span>
+                </div>
+                <h3 class="text-base sm:text-[17px] font-bold text-brand-text leading-snug mb-2.5">
+                    Управление рисками и выявление угроз.
+                </h3>
+                <p class="text-sm text-brand-muted leading-relaxed">
+                    Платформа анализирует условия договоров, выявляя скрытые требования и потенциально невыгодные (токсичные) условия до подписания.
+                </p>
+            </div>
+        </section>
+
+        <!-- БЛОК 5: ЦЕЛЕВОЕ ДЕЙСТВИЕ (CTA) И ДИСКЛЕЙМЕР -->
+        <section class="card-surface rounded-2xl p-5 sm:p-9 text-center">
+            <p class="text-sm sm:text-base text-brand-muted leading-relaxed max-w-3xl mx-auto">
+                Ответьте на 6 простых вопросов и <span class="text-brand-accent font-semibold">получите персональный отчет для вашего бизнеса: гранты, субсидии, льготы и другие доступные именно вам программы.</span> После перехода вы сразу получите PDF-пример «Отчета», чтобы оценить глубину нашей аналитики и оценки каждой программы еще до начала работы.
+            </p>
+
+            <!-- Кнопки действия (единая связка с app.html) -->
+            <div class="mt-6 sm:mt-7 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+                <a href="app.html" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-brand-accent hover:bg-brand-accentHover text-white font-semibold text-sm sm:text-base transition-all shadow-sm cursor-pointer">
+                    <span>Попробовать демо бесплатно</span>
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </a>
+                <button onclick="openModal()" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-[#F9F9F6] hover:bg-brand-accentLight border border-brand-border hover:border-brand-accentBorder text-brand-text hover:text-brand-accent font-semibold text-sm sm:text-base transition-all cursor-pointer">
+                    Получить консультацию
+                </button>
+            </div>
+
+            <!-- Индикатор времени -->
+            <div class="mt-4 flex items-center justify-center gap-2 text-xs text-brand-muted">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+                </span>
+                <span>Время до получения отчета — 10 минут</span>
+            </div>
+
+            <!-- Юридический дисклеймер -->
+            <div class="mt-6 pt-5 border-t border-brand-border">
+                <div class="bg-[#F9F9F6] border border-brand-border rounded-xl p-3.5 sm:p-4 max-w-3xl mx-auto text-left">
+                    <p class="text-[11px] sm:text-xs text-brand-subtle leading-relaxed">
+                        КАПИТУЛ — частный информационно-аналитический сервис. Мы не являемся представителями государственных органов, фондов или финансовых организаций. Использование платформы не гарантирует получение финансирования. Решение о предоставлении поддержки принимается соответствующими организациями.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ПОДВАЛ (FOOTER) -->
+    <footer class="border-t border-brand-border bg-[#EAEAE4] mt-6">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-7 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 lg:gap-4">
+            
+            <!-- Левая часть: Иконка + КАПИТУЛ -->
+            <div class="flex items-center gap-2.5 shrink-0">
+                <div class="w-6 h-6 rounded-md bg-brand-accent text-white font-extrabold text-xs flex items-center justify-center shrink-0">
+                    К
+                </div>
+                <div>
+                    <div class="font-bold text-sm text-brand-text leading-none">КАПИТУЛ</div>
+                    <div class="text-[11px] text-brand-muted mt-1 leading-none">Поиск программ господдержки</div>
+                </div>
+            </div>
+
+            <!-- Центральная часть: Контакты -->
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-mono shrink-0">
+                <div>
+                    <span class="text-brand-subtle">TG:</span>
+                    <a href="https://t.me/SerjMuzikin" target="_blank" rel="noopener noreferrer" class="text-brand-text hover:text-brand-accent font-medium ml-1 transition-colors">@SerjMuzikin</a>
+                </div>
+                <div>
+                    <span class="text-brand-subtle">EMAIL:</span>
+                    <a href="mailto:muzikin.s@yandex.ru" class="text-brand-text hover:text-brand-accent font-medium ml-1 transition-colors">muzikin.s@yandex.ru</a>
+                </div>
+            </div>
+
+            <!-- Правая часть: Уведомление об отсутствии сбора ПД -->
+            <div class="text-left lg:text-right text-[11px] text-brand-subtle leading-snug shrink-0">
+                <div class="sm:whitespace-nowrap">Сайт не собирает и не хранит ваши персональные данные.</div>
+                <div class="mt-0.5">© 2026 КАПИТУЛ. Все права защищены.</div>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- МОДАЛЬНОЕ ОКНО (ПОП-АП) С ВЕРХНЕЙ ПЛАШКОЙ И ЛИНИЕЙ ОТСЕЧКИ -->
+    <div id="demoModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <div class="bg-white border border-brand-border rounded-2xl max-w-md w-full overflow-hidden shadow-2xl transform transition-all">
+            
+            <!-- Верхняя шапка поп-апа с плашкой, заголовком и линией отсечки -->
+            <div class="bg-[#F8F8F4] px-5 sm:px-7 py-5 border-b border-brand-border">
+                <div class="flex items-center justify-between gap-3">
+                    <!-- Верхняя плашка статуса -->
+                    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-brand-accentLight border border-brand-accentBorder">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span>
+                        <span class="text-[11px] font-mono font-semibold text-brand-accent uppercase tracking-wider">Демо-режим</span>
+                    </div>
+
+                    <!-- Кнопка закрытия -->
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-lg bg-white border border-brand-border hover:border-brand-accent text-brand-muted hover:text-brand-text flex items-center justify-center transition-colors cursor-pointer shrink-0" aria-label="Закрыть">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <h3 class="text-xl sm:text-2xl font-bold text-brand-text mt-3.5">
+                    Индивидуальный разбор
+                </h3>
+            </div>
+
+            <!-- Тело поп-апа -->
+            <div class="px-5 sm:px-7 py-6">
+                <p class="text-sm text-brand-muted leading-relaxed">
+                    Вы находитесь на демонстрационном стенде платформы <strong>КАПИТУЛ</strong>. Чтобы обсудить проект, заказать индивидуальный разбор программ господдержки под ваш бизнес или интеграцию подобного ИИ-решения — напишите напрямую руководителю проекта.
+                </p>
+
+                <div class="mt-6 space-y-2.5">
+                    <a href="https://t.me/SerjMuzikin" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-brand-accent hover:bg-brand-accentHover text-white font-semibold text-sm transition-all shadow-xs">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                        </svg>
+                        <span>Написать в Telegram (@SerjMuzikin)</span>
+                    </a>
+
+                    <a href="app.html" class="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl bg-[#F8F8F4] hover:bg-brand-accentLight border border-brand-border hover:border-brand-accentBorder text-brand-text hover:text-brand-accent font-medium text-xs sm:text-sm transition-all">
+                        <span>Перейти к демо-диагностике (6 вопросов)</span>
+                        <span>→</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Полный список 28 видов господдержки
+        const supportTypes = [
+            { name: "Поручительство", highlight: false },
+            { name: "Налоговые льготы", highlight: true },
+            { name: "Нетворкинг", highlight: false },
+            { name: "Субсидия", highlight: true },
+            { name: "Ваучер", highlight: false },
+            { name: "Экспертная поддержка", highlight: false },
+            { name: "Льготный факторинг", highlight: false },
+            { name: "Премия", highlight: false },
+            { name: "Социальный контракт", highlight: true },
+            { name: "Таможенные преференции", highlight: true },
+            { name: "Реструктуризация долга", highlight: false },
+            { name: "Акселерационная поддержка", highlight: true },
+            { name: "Гранты на НИОКР", highlight: true },
+            { name: "Льготный лизинг", highlight: true },
+            { name: "Промышленная ипотека", highlight: false },
+            { name: "Земля без торгов", highlight: true },
+            { name: "Возмещение CAPEX", highlight: false },
+            { name: "Экспортный кэшбэк", highlight: false },
+            { name: "Льготные займы ФРП", highlight: true },
+            { name: "Инвестиционный налоговый вычет", highlight: false },
+            { name: "Офсетные контракты", highlight: false },
+            { name: "Субсидирование ставки", highlight: true },
+            { name: "Страхование экспортных кредитов", highlight: false },
+            { name: "Бесплатная сертификация", highlight: false },
+            { name: "Льготная аренда в технопарке", highlight: true },
+            { name: "Патентная поддержка", highlight: false },
+            { name: "Софинансирование инжиниринга", highlight: false },
+            { name: "Квоты на закупку МСП", highlight: false }
+        ];
+
+        function createPillHTML(item) {
+            if (item.highlight) {
+                return `<span class="px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-brand-accentLight border border-brand-accentBorder text-brand-accent whitespace-nowrap">${item.name}</span>`;
+            }
+            return `<span class="px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-[#F9F9F6] border border-brand-border text-brand-text whitespace-nowrap">${item.name}</span>`;
+        }
+
+        function initSupportTags() {
+            const row1 = document.getElementById('marqueeRow1');
+            const row2 = document.getElementById('marqueeRow2');
+            const grid = document.getElementById('gridView');
+
+            const firstHalf = supportTypes.slice(0, 14);
+            const secondHalf = supportTypes.slice(14, 28);
+
+            // Дублируем массив для бесконечной бесшовной прокрутки
+            row1.innerHTML = [...firstHalf, ...firstHalf].map(createPillHTML).join('');
+            row2.innerHTML = [...secondHalf, ...secondHalf].map(createPillHTML).join('');
+
+            // Карточки для полного раскрытого списка (адаптивно под мобильный)
+            grid.innerHTML = supportTypes.map(item => `
+                <div class="px-3.5 py-2.5 rounded-xl text-xs sm:text-[13px] font-medium flex items-center gap-2 ${
+                    item.highlight 
+                        ? 'bg-brand-accentLight border border-brand-accentBorder text-brand-accent' 
+                        : 'bg-[#F9F9F6] border border-brand-border text-brand-text'
+                }">
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0 ${item.highlight ? 'bg-brand-accent' : 'bg-brand-subtle'}"></span>
+                    <span class="leading-snug">${item.name}</span>
+                </div>
+            `).join('');
+        }
+
+        let isAllTagsShown = false;
+        function toggleAllTags(e) {
+            if (e) e.preventDefault();
+            isAllTagsShown = !isAllTagsShown;
+            const marqueeView = document.getElementById('marqueeView');
+            const gridView = document.getElementById('gridView');
+            const btn = document.getElementById('tagsToggleBtn');
+            const circle = document.getElementById('tagsToggleCircle');
+
+            if (isAllTagsShown) {
+                marqueeView.classList.add('hidden');
+                gridView.classList.remove('hidden');
+                btn.classList.remove('bg-[#D8D8D2]');
+                btn.classList.add('bg-brand-accent');
+                circle.classList.remove('translate-x-0');
+                circle.classList.add('translate-x-4');
+            } else {
+                marqueeView.classList.remove('hidden');
+                gridView.classList.add('hidden');
+                btn.classList.add('bg-[#D8D8D2]');
+                btn.classList.remove('bg-brand-accent');
+                circle.classList.add('translate-x-0');
+                circle.classList.remove('translate-x-4');
+            }
+        }
+
+        // Модальное окно
+        function openModal() {
+            const modal = document.getElementById('demoModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('demoModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('demoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        initSupportTags();
+    </script>
+</body>
+</html>
